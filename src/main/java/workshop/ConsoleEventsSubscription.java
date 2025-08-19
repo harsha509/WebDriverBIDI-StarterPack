@@ -78,8 +78,6 @@ public class ConsoleEventsSubscription {
             //  - Log: "First console entry received: type={}, method={}, text={}" with fields from the event
             //  - Log a completion message like: "Console events subscription demo complete"
 
-        } catch (TimeoutException te) {
-            logger.error("Timed out waiting for a console entry (no event received within limit)", te);
         } catch (Exception e) {
             logger.error("Error during console events subscription example", e);
         } finally {
