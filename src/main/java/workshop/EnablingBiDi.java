@@ -31,12 +31,15 @@ public class EnablingBiDi {
             logger.info("WebDriver session started");
 
             // Step 2: Verify that the driver exposes the BiDi bridge
-            if (driver instanceof HasBiDi) {
-                logger.info("✅ HasBiDi detected: Selenium BiDi bridge is available");
-            } else {
-                logger.warn("❌ HasBiDi NOT detected: BiDi bridge not available on this driver");
+            try {
+                ((HasBiDi) driver).getBiDi();
+                logger.info("✅ BiDi is enabled and working: WebSocket connection established");
+            } catch (Exception e) {
+                logger.error("❌ BiDi is NOT enabled: Failed to establish BiDi session - {}", e.getMessage());
+                return;
             }
 
+            // Step 3: Create a BiDi BrowsingContext
             // TODO: Create a BiDi BrowsingContext from the current window
 
             // Step 4: Perform a small BiDi action
