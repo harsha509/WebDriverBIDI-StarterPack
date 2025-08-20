@@ -1,7 +1,10 @@
 package workshop;
 
+import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.HasCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.bidi.HasBiDi;
+import org.openqa.selenium.HasCapabilities;
 import org.openqa.selenium.bidi.browsingcontext.BrowsingContext;
 import org.openqa.selenium.bidi.browsingcontext.NavigationResult;
 import org.openqa.selenium.bidi.browsingcontext.ReadinessState;
@@ -24,10 +27,14 @@ public class EnablingBiDi {
             // TODO: Enable WebSocket URL so Selenium can bridge to BiDi
 
             // Optional: any other flags you use regularly can go here
-            options.addArguments("--enable-automation");
+             options.addArguments("--enable-automation");
+             options.addArguments("--debug-bidi-mapper");
 
             logger.info("Starting Chrome...");
             driver = new ChromeDriver(options);
+
+            Capabilities caps = ((HasCapabilities) driver).getCapabilities();
+            logger.info("Caps "+ caps);
             logger.info("WebDriver session started");
 
             // Step 2: Verify that the driver exposes the BiDi bridge
@@ -47,6 +54,8 @@ public class EnablingBiDi {
             logger.info("Navigating via BiDi to: {}", url);
 
             // TODO: Navigate via BiDi with readiness state COMPLETE
+
+            Thread.sleep(30000);
 
         } catch (Exception e) {
             logger.error("Error during BiDi workshop step", e);

@@ -18,7 +18,7 @@ Files:
 How to run:
 - Using Maven Exec:
   ```bash
-  mvn compile exec:java -Dexec.mainClass="workshop.NetworkEvents"
+  mvn clean compile exec:java -Dexec.mainClass="workshop.NetworkEvents"
   ```
 
 Notes:

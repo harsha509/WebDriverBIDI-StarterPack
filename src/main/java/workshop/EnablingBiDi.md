@@ -18,7 +18,7 @@ Files:
 How to run:
 - Using Maven Exec:
   ```bash
-  mvn exec:java -Dexec.mainClass="workshop.EnablingBiDi"
+  mvn clean compile exec:java -Dexec.mainClass="workshop.EnablingBiDi"
   ```
 
 ## Replace the TODOs in `EnablingBiDi.java`

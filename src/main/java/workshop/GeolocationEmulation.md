@@ -17,7 +17,7 @@ Files:
 
 How to run:
 ```bash
-mvn exec:java -Dexec.mainClass="workshop.GeolocationEmulation"
+mvn clean compile exec:java -Dexec.mainClass="workshop.GeolocationEmulation"
 ```
 
 Notes:
