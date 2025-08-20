@@ -16,7 +16,7 @@ Files:
 
 How to run:
 ```bash
-mvn -q clean compile exec:java -Dexec.mainClass="workshop.ReactiveFormValidation"
+mvn compile exec:java -Dexec.mainClass="workshop.ReactiveFormValidation"
 ```
 
 ## Replace the TODOs in `ReactiveFormValidation.java`

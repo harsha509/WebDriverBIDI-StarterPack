@@ -15,7 +15,7 @@ Files:
 
 How to run:
 ```bash
-mvn -q clean compile exec:java -Dexec.mainClass="workshop.ConsoleEventsSubscription"
+mvn compile exec:java -Dexec.mainClass="workshop.ConsoleEventsSubscription"
 ```
 
 ## Replace the TODOs in `ConsoleEventsSubscription.java`
