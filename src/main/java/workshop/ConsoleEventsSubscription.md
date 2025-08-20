@@ -20,7 +20,7 @@ mvn clean compile exec:java -Dexec.mainClass="workshop.ConsoleEventsSubscription
 
 ## Replace the TODOs in `ConsoleEventsSubscription.java`
 
-1) Create a LogInspector and subscribe BEFORE navigation/clicks  
+1) Create a LogInspector and subscribe BEFORE navigation/clicks
 Replace the TODO block with:
 ```java
 logInspector = new LogInspector(driver); // <-- individual assignment

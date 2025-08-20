@@ -22,6 +22,7 @@ public class ReactiveFormValidation {
     public static void main(String[] args) {
         ChromeOptions options = new ChromeOptions();
         // TODO: Enable BiDi bridge (uncomment the next line for the demo)
+
         // enable BiDi bridge
 
         WebDriver driver = new ChromeDriver(options);
@@ -32,35 +33,109 @@ public class ReactiveFormValidation {
 
         try {
             String page = """
-                <html><head><title>Reactive Form</title>
-                <style>.err{border:2px solid red}.ok{border:2px solid green}</style></head>
-                <body>
-                  <form id='f'>
-                    <input id='email' placeholder='email'><div id='e1' style='color:red'></div>
-                    <input id='pass' type='password' placeholder='password'><div id='e2' style='color:red'></div>
-                    <input id='confirm' type='password' placeholder='confirm'><div id='e3' style='color:red'></div>
-                    <button id='submit' disabled>Submit</button>
-                  </form>
-                  <script>
-                    const email=document.getElementById('email'),
-                          pass=document.getElementById('pass'),
-                          confirm=document.getElementById('confirm'),
-                          btn=document.getElementById('submit');
-                    function okEmail(v){return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(v)}
-                    function okPass(v){return v.length>=8}
-                    function update(){
-                      const em=okEmail(email.value), pw=okPass(pass.value), cf=pass.value===confirm.value;
-                      email.className=em?'ok':(email.value?'err':''); document.getElementById('e1').textContent=em?'':'Invalid email'; console.log(em?'VALIDATION_OK: email':'VALIDATION_ERR: email');
-                      pass.className=pw?'ok':(pass.value?'err':''); document.getElementById('e2').textContent=pw?'':'Min 8 chars'; console.log(pw?'VALIDATION_OK: pass':'VALIDATION_ERR: pass');
-                      confirm.className=cf&&confirm.value?'ok':(confirm.value?'err':''); document.getElementById('e3').textContent=cf||!confirm.value?'':'Mismatch'; console.log(cf?'VALIDATION_OK: confirm':'VALIDATION_ERR: confirm');
-                      btn.disabled=!(em&&pw&&cf); if(!btn.disabled) console.log('FORM_READY');
-                    }
-                    ['input','change'].forEach(ev=>{
-                      email.addEventListener(ev,update); pass.addEventListener(ev,update); confirm.addEventListener(ev,update);
-                    });
-                    document.getElementById('f').addEventListener('submit',e=>{e.preventDefault(); console.log('FORM_SUBMITTED'); alert('Submitted!')});
-                  </script>
-                </body></html>
+               <html><head><title>Reactive Form</title>
+                           <style>.err{border:2px solid red}.ok{border:2px solid green}</style>
+                           <meta charset="UTF-8">
+                       </head>
+                       <body>
+                       <form id='f' novalidate>
+                           <input id='email' placeholder='email'><div id='e1' style='color:red'></div>
+                           <input id='pass' type='password' placeholder='password'><div id='e2' style='color:red'></div>
+                           <input id='confirm' type='password' placeholder='confirm'><div id='e3' style='color:red'></div>
+                           <button id='submit' disabled>Submit</button>
+                       </form>
+                       <script>
+                           const email = document.getElementById('email'),
+                               pass = document.getElementById('pass'),
+                               confirm = document.getElementById('confirm'),
+                               btn = document.getElementById('submit');
+                           // --- validators -> { ok, code, msg } ---
+                           function validateEmail(v){
+                               if(!v) return { ok:false, code:'REQUIRED', msg:'Email is required' };
+                               if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(v))
+                                   return { ok:false, code:'FORMAT', msg:'Enter a valid email like name@domain.com' };
+                               return { ok:true };
+                           }
+                           function validatePass(v){
+                               if(!v) return { ok:false, code:'REQUIRED', msg:'Password is required' };
+                               if(v.length < 8) return { ok:false, code:'MIN_LENGTH', msg:'Must be at least 8 characters' };
+                               return { ok:true };
+                           }
+                           function validateConfirm(pw, cf){
+                               if(!cf) return { ok:false, code:'REQUIRED', msg:'Please confirm your password' };
+                               if(pw !== cf) return { ok:false, code:'MISMATCH', msg:'Passwords do not match' };
+                               return { ok:true };
+                           }
+                           // --- UI helper (unchanged visuals) ---
+                           function setStatus(input, errorDiv, res, {showEmptyMsg=false}={}){
+                               if(res.ok){
+                                   input.className = 'ok';
+                                   errorDiv.textContent = '';
+                               } else {
+                                   input.className = input.value ? 'err' : '';
+                                   // keep original behavior: only show mismatch text for confirm; otherwise hide when empty
+                                   if(showEmptyMsg || input.value){
+                                       errorDiv.textContent = res.msg;
+                                   } else {
+                                       errorDiv.textContent = '';
+                                   }
+                               }
+                           }
+                           // --- logging: separate, human-readable only ---
+                           function log(name, res){
+                               if(res.ok){
+                                   console.log(`VALIDATION_OK: ${name}`);
+                               } else {
+                                   console.warn(`VALIDATION_ERR: ${name} — ${res.code} (${res.msg})`);
+                               }
+                           }
+                           function update(){
+                               const emRes = validateEmail(email.value.trim());
+                               const pwRes = validatePass(pass.value);
+                               const cfRes = validateConfirm(pass.value, confirm.value);
+                       
+                               setStatus(email, document.getElementById('e1'), emRes, {showEmptyMsg:false});
+                               log('email', emRes);
+                       
+                               setStatus(pass, document.getElementById('e2'), pwRes, {showEmptyMsg:false});
+                               log('pass', pwRes);
+                       
+                               // Visual: only show "Mismatch" when user typed confirm; (keeps old look)
+                               const showConfirmText = confirm.value.length > 0 && !cfRes.ok && cfRes.code === 'MISMATCH';
+                               confirm.className = (cfRes.ok ? 'ok' : (confirm.value ? 'err' : ''));
+                               document.getElementById('e3').textContent = showConfirmText ? cfRes.msg : '';
+                               // Logs: always tell the precise reason (even when blank)
+                               // Also, only consider confirm OK if it's non-empty and equal:
+                               const confirmIsOk = !!confirm.value && pass.value === confirm.value;
+                               log('confirm', confirmIsOk ? {ok:true} : cfRes);
+                       
+                               const formReady = emRes.ok && pwRes.ok && confirmIsOk;
+                               btn.disabled = !formReady;
+                               if(formReady) console.info('FORM_READY');
+                           }
+                       
+                           ['input','change','blur'].forEach(ev=>{
+                               email.addEventListener(ev, update);
+                               pass.addEventListener(ev, update);
+                               confirm.addEventListener(ev, update);
+                           });
+                       
+                           document.getElementById('f').addEventListener('submit', e=>{
+                               e.preventDefault();
+                               update();
+                               if(btn.disabled){
+                                   console.warn('FORM_BLOCKED: submission blocked by validation errors');
+                                   return;
+                               }
+                               console.log('FORM_SUBMITTED');
+                               alert('Submitted!');
+                           });
+                       
+                           // initial run (handles autofill)
+                           update();
+                       </script>
+                       </body>
+                       </html>
             """;
             // Use base64 data URL to avoid '+'/encoding quirks with URLEncoder
             String base64 = Base64.getEncoder().encodeToString(page.getBytes(StandardCharsets.UTF_8));
